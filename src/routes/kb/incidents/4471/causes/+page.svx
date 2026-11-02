@@ -2,7 +2,7 @@
 layout: runbook
 title: '#4471 · two problems in one ticket'
 owner: support desk
-status: open
+status: closed
 reviewed: 2026-11-02
 signature: 'v1.eyJzdWIiOiIyMjI0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTM2MzA1NzEsImV4cCI6MTc5MzcxNjk3MX0.CX_q03_pOCLPcKImpjuCn_-h4Ly3FaOEzsP0yAetshU'
 ---
@@ -19,12 +19,13 @@ signature: 'v1.eyJzdWIiOiIyMjI0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpY
   };
 </script>
 
-The [incident page](/kb/incidents/4471) calls #4471 one issue with one fix queued. It holds two
-bugs. The desk merges on subject lines, and subject lines cannot tell these two apart.
+The [incident page](/kb/incidents/4471) calls #4471 one issue with one fix queued. It held two
+bugs. The desk merges on subject lines, and subject lines cannot tell these two apart. Engineering
+closed #4471 on 5 October with a different outcome for each.
 
-<Callout kind="warn">
-The queued fix changes the parser. It does not change the hint on the booking-v3 form, so the
-hint reports keep coming after the fix ships.
+<Callout>
+The parser bug is fixed. The hint bug will not be fixed, because the booking-v3 form is retired.
+The parser fix does not change the hint.
 </Callout>
 
 ## What was merged
@@ -35,7 +36,9 @@ hint reports keep coming after the fix ships.
 
 The shared parser reads every date month first, so a day-first tenant's dates come out flipped:
 7 April becomes 4 July. It reaches every tenant on file, through the app, through email, and
-through the booking-v2 form. This is the bug the queued fix is for.
+through the booking-v2 form.
+
+Engineering fixed it: `fix(dates): parse dd/mm for eu locales`. Its ticket is closed as completed.
 
 ## The hint bug
 
@@ -44,7 +47,8 @@ what the hint says, month first, and the form reads the date the tenant's way. I
 reports that come through the form at a tenant on booking-v3. The same tenants' app and email
 reports belong to the parser bug.
 
-The fix is a different one: the form's hint has to match the order the form reads.
+Engineering will not fix it, because the booking-v3 form is retired. Its ticket is closed as not
+planned.
 
 ## How to tell them apart
 
@@ -61,12 +65,16 @@ Use `causeOf` in `causes.ts`. It looks at the tenant's locale, the tenant's form
 The note under the table counts reports the desk read as a one-day move. The kb files a report by
 its tenant, so they count under the parser bug. A month-first parser cannot move 12 May to 11 May,
 though, and R-41344 says clients in Lisbon and Toronto got different days for one meeting. That
-points at time zones. Nobody has checked it. If engineering finds another cause, they move out of
-the parser count and get their own ticket.
+points at time zones. Nobody has checked it. The parser fix changes the order of day and month, so
+it would not stop these. If they come in again, they move out of the parser count and get their own
+ticket.
 
 ## Still open
 
-- The incident page still says one issue. Its owner has to update it.
+- The incident page still says one issue with one fix queued. Its owner has to update it.
+- The tenant directory in this export, dated 4 October, still lists alder.physio, copper.studio
+  and pale.harbour on booking-v3. The hint stays wrong for anyone still using that form, so check
+  that they have moved off it.
 - Decision 0001 still tells the desk to merge on subject. A decision is never edited, so a new
   record has to replace it, and the triage page has to follow.
 
