@@ -1,0 +1,73 @@
+---
+layout: runbook
+title: '#4471 · two problems in one ticket'
+owner: support desk
+status: open
+reviewed: 2026-11-02
+signature: 'v1.eyJzdWIiOiIyMjI0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTM2MzA1NzEsImV4cCI6MTc5MzcxNjk3MX0.CX_q03_pOCLPcKImpjuCn_-h4Ly3FaOEzsP0yAetshU'
+---
+
+<script>
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/bandoyer/support-kb-4471/issues';
+  const filed = {
+    parser: { label: 'support-kb-4471#1', href: `${repo}/1` },
+    hint: { label: 'support-kb-4471#2', href: `${repo}/2` },
+  };
+</script>
+
+The [incident page](/kb/incidents/4471) calls #4471 one issue with one fix queued. It holds two
+bugs. The desk merges on subject lines, and subject lines cannot tell these two apart.
+
+<Callout kind="warn">
+The queued fix changes the parser. It does not change the hint on the booking-v3 form, so the
+hint reports keep coming after the fix ships.
+</Callout>
+
+## What was merged
+
+<CauseTable ticket={4471} {filed} />
+
+## The parser bug
+
+The shared parser reads every date month first, so a day-first tenant's dates come out flipped:
+7 April becomes 4 July. It reaches every tenant on file, through the app, through email, and
+through the booking-v2 form. This is the bug the queued fix is for.
+
+## The hint bug
+
+The booking-v3 form prints `MM/DD/YYYY` under its date field. People at a day-first tenant type
+what the hint says, month first, and the form reads the date the tenant's way. It reaches only
+reports that come through the form at a tenant on booking-v3. The same tenants' app and email
+reports belong to the parser bug.
+
+The fix is a different one: the form's hint has to match the order the form reads.
+
+## How to tell them apart
+
+Use `causeOf` in `causes.ts`. It looks at the tenant's locale, the tenant's form and the channel.
+
+- **Not the subject.** Every subject on a hint report also appears on parser reports.
+- **Not the intake tag.** Intake guesses from the reporter's browser. The "tagged as" column shows
+  how often that guess disagrees with the cause.
+- **Not the raw export.** Its pages overlap and some reports come twice. The table counts each id
+  once.
+
+## Reports that do not read as a flip
+
+The note under the table counts reports the desk read as a one-day move. The kb files a report by
+its tenant, so they count under the parser bug. A month-first parser cannot move 12 May to 11 May,
+though, and R-41344 says clients in Lisbon and Toronto got different days for one meeting. That
+points at time zones. Nobody has checked it. If engineering finds another cause, they move out of
+the parser count and get their own ticket.
+
+## Still open
+
+- The incident page still says one issue. Its owner has to update it.
+- Decision 0001 still tells the desk to merge on subject. A decision is never edited, so a new
+  record has to replace it, and the triage page has to follow.
+
+<RenderStamp {signature} />
